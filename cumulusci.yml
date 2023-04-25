@@ -1,0 +1,57 @@
+minimum_cumulusci_version: '3.30.0'
+project:
+  name: test-utils-shared
+  source_format: sfdx
+  git:
+    default_branch: 'main'
+    repo_url: https://github.com/beAGoodQE/test-utils-shared
+
+tasks:
+
+  enable_translation_language_workbench_settings:
+    description: Enables Translation Language Workbench Settings
+    class_path: cumulusci.tasks.salesforce.Deploy
+    options:
+      path: cumulusCI/config/test-only/settings
+
+  deploy_skip_identity_perm_set:
+    # Deployes a simple perm set to skip the identity challenge on login
+    description: Deploys Perm Set to skip the identity challenge
+    class_path: cumulusci.tasks.salesforce.Deploy
+    options:
+      path:  cumulusCI/config/test-only/permissions
+
+  create_test_users:
+    # requires email option, so run as 'cci task run create_users -o param1 your-email@salesforce.com'
+    description: Create Test Users
+    class_path: cumulusci.tasks.apex.anon.AnonymousApextTask
+    options:
+      path: cumulusCI/scripts/CreateUsers.cls
+      apex: createUsers();
+      param1: test@salesforce.com
+
+  link_employee_to_user:
+    description: Test Only - links user with the specified 'Alias' (Param1) to the Employee with the emp number (Param2)
+    class_path: cumulusci.tasks.apex.anon.AnonymousApextTask
+    options:
+      path: cumulusCI/scripts/LinkEmployeeToUser.cls
+
+flows:
+  config_employee_to_user:
+    description: Links employee to user
+    steps:
+      1:
+        task: link_employee_to_user
+        options:
+          param1: Test1
+          param2: QA1
+      2:
+        task: link_employee_to_user
+        options:
+          param1: Test2
+          param2: QA2
+      1:
+        task: link_employee_to_user
+        options:
+          param1: Test3
+          param2: QA3
